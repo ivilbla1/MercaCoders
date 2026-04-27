@@ -72,9 +72,7 @@ class HomeScreen extends StatelessWidget {
 
               // ── BOTÓN MICRÓFONO ──────────────────────────────
               GestureDetector(
-                onTap: () {
-                  // TODO: activar voz
-                },
+                onTap: () => Navigator.pushNamed(context, '/listening'),
                 child: Container(
                   width: 280,
                   height: 280,
