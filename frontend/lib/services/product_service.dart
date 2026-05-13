@@ -1,137 +1,201 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+class ProductoDetalle {
+  final String ean;
+  final String nombre;
+  final int pasillo;
+  final String posicion;
+  final String categoria;
+  final String unidad;
+  final Map<String, dynamic>? pasilloInfo;
+
+  const ProductoDetalle({
+    required this.ean,
+    required this.nombre,
+    required this.pasillo,
+    required this.posicion,
+    required this.categoria,
+    required this.unidad,
+    this.pasilloInfo,
+  });
+
+  factory ProductoDetalle.fromJson(Map<String, dynamic> json) {
+    return ProductoDetalle(
+      ean: json['ean'] ?? '',
+      nombre: json['nombre'] ?? '',
+      pasillo: json['pasillo'] ?? 0,
+      posicion: json['posicion'] ?? '',
+      categoria: json['categoria'] ?? '',
+      unidad: json['unidad'] ?? '',
+      pasilloInfo: json['pasillo_info'] as Map<String, dynamic>?,
+    );
+  }
+
+  String get descripcionPasillo =>
+      pasilloInfo?['descripcion'] ?? 'Pasillo $pasillo';
+
+  String get nombrePasillo =>
+      pasilloInfo?['nombre'] ?? 'Pasillo $pasillo';
+
+  String get naviLeensCode =>
+      pasilloInfo?['navileens_code'] ?? '';
+
+  String get instruccionVoz =>
+      'Busca $nombre en el pasillo $pasillo: $nombrePasillo. '
+      '$descripcionPasillo. '
+      '${_textoAltura(posicion)}.';
+
+  static String _textoAltura(String pos) {
+    switch (pos) {
+      case 'suelo':   return 'Está en el suelo';
+      case 'bajo':    return 'Está en la estantería baja';
+      case 'centro':  return 'Está a media altura';
+      case 'alto':    return 'Está en la estantería alta';
+      default:        return 'Está en la estantería';
+    }
+  }
+}
+
+class ListaCompraResult {
+  final List<ProductoDetalle> productosEncontrados;
+  final List<String> productosNoEncontrados;
+  final String mensajeVoz;
+
+  const ListaCompraResult({
+    required this.productosEncontrados,
+    required this.productosNoEncontrados,
+    required this.mensajeVoz,
+  });
+}
+
 class ProductService {
-  // EL DICCIONARIO DEFINITIVO: PRODUCTOS + MARCAS FAMOSAS
-  final Set<String> catalogoMercadona = {
-    // --- MARCAS FAMOSAS (EL EXTRA QUE PEDISTE) ---
-    'cocacola', 'coke', 'fanta', 'sprite', 'nestea', 'aquarius', 'monster', 'redbull', 'burn',
-    'pepsi', 'kas', '7up', 'schweppes', 'tonica', 'bifrutas', 'pascual', 'don simon',
-    'donuts', 'bollycao', 'phoskitos', 'kinder', 'bueno', 'nutella', 'nocilla', 'kitkat',
-    'oreo', 'chipsahoy', 'principe', 'lu', 'milka', 'toblerone', 'lindt', 'valor',
-    'lays', 'lays', 'doritos', 'cheetos', 'pringles', 'ruffles', 'matutano',
-    'danone', 'activia', 'danacol', 'danonino', 'actimel', 'vitalinea', 'oikos',
-    'hellmanns', 'heinz', 'ketchup', 'orlando', 'gallina', 'blanca', 'avecrem', 'knorr',
-    'barilla', 'gallo', 'brillante', 'sos', 'la', 'cigala', 'calvo', 'isabel', 'cuca',
-    'casa', 'tarradellas', 'elpozo', 'campofrio', 'navidul', 'revilla', 'oscar', 'mayer',
-    'fairy', 'finish', 'ariel', 'skip', 'vick', 'vileda', 'kh7', 'cillit', 'bang',
-    'colgate', 'oralb', 'sensodyne', 'listerine', 'gillette', 'pantene', 'h&s', 'fructis',
-    'nivea', 'dove', 'rexona', 'axe', 'old', 'spice', 'ausonia', 'evax', 'tampax', 'dodot',
+  // ── Cambia esto por la IP de tu máquina en desarrollo ──────────────────────
+  // Para emulador Android: 10.0.2.2:8000
+  // Para dispositivo físico: IP local del PC, ej. 192.168.1.100:8000
+  static const String _baseUrl = 'http://10.0.2.2:8000';
 
-    // --- FRUTERÍA Y VERDURAS (MÁXIMA VARIEDAD) ---
-    'manzana', 'platano', 'plátano', 'banana', 'pera', 'naranja', 'limon', 'limón', 'fresa', 'fresón', 'kiwi', 'uva',
-    'piña', 'melon', 'melón', 'sandia', 'sandía', 'tomate', 'lechuga', 'cebolla', 'ajo', 'patata', 'patatas', 'zanahoria',
-    'pimiento', 'pepino', 'calabacin', 'calabacín', 'berenjena', 'brocoli', 'brócoli', 'espinacas', 'setas', 'champiñon',
-    'champiñón', 'aguacate', 'mango', 'papaya', 'coliflor', 'repollo', 'judías', 'judias', 'guisantes', 'calabaza',
-    'apio', 'puerro', 'rábano', 'canónigos', 'rucula', 'rúcula', 'cherrys', 'espárragos', 'alcachofas', 'remolacha',
-    'maíz', 'mazorca', 'jengibre', 'perejil', 'cilantro', 'hierbabuena', 'lombarda', 'endivias', 'batata', 'boniato',
+  // ── LISTA DE LA COMPRA COMPLETA ─────────────────────────────────────────────
+  Future<ListaCompraResult> procesarListaVoz(String textoVoz) async {
+    try {
+      final response = await http
+          .post(
+            Uri.parse('$_baseUrl/products/lista'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'texto_voz': textoVoz, 'usar_ia': true}),
+          )
+          .timeout(const Duration(seconds: 15));
 
-    // --- CARNICERÍA Y AVES (CORTES INCLUIDOS) ---
-    'pollo', 'pechuga', 'muslo', 'alitas', 'pavo', 'cerdo', 'lomo', 'chuleta', 'ternera', 'vaca', 'hamburguesa',
-    'salchichas', 'bacon', 'beicon', 'jamon', 'jamón', 'serrano', 'cocido', 'chorizo', 'salchichon', 'salchichón',
-    'fuet', 'pate', 'paté', 'sobrasada', 'mortadela', 'panceta', 'conejo', 'cordero', 'picada', 'nuggets', 'entrecot',
-    'solomillo', 'costillas', 'magro', 'callos', 'morcilla', 'chistorra', 'codillo', 'pato', 'foie',
+      if (response.statusCode == 200) {
+        final data = jsonDecode(utf8.decode(response.bodyBytes));
+        final productos = (data['orden_recorrido'] as List)
+            .map((e) => ProductoDetalle.fromJson(e))
+            .toList();
+        return ListaCompraResult(
+          productosEncontrados: productos,
+          productosNoEncontrados:
+              List<String>.from(data['productos_no_encontrados'] ?? []),
+          mensajeVoz: data['mensaje_voz'] ?? '',
+        );
+      }
+    } catch (_) {}
 
-    // --- PESCADERÍA Y MARISCO (FRESCO Y CONGELADO) ---
-    'pescado', 'merluza', 'salmon', 'salmón', 'atun', 'atún', 'bacalao', 'gambas', 'langostinos', 'sardinas', 'boquerones',
-    'pulpo', 'calamar', 'sepia', 'pota', 'mejillones', 'almejas', 'dorada', 'lubina', 'trucha', 'gulas', 'surimi',
-    'bacaladilla', 'emperador', 'pez', 'espada', 'rodaballo', 'cigalas', 'bogavante', 'buey', 'mar', 'berberechos',
+    // ── FALLBACK LOCAL si el backend no está disponible ─────────────────────
+    return _fallbackLocal(textoVoz);
+  }
 
-    // --- BODEGA, BEBIDAS Y CAFÉS ---
-    'agua', 'mineral', 'gas', 'refresco', 'cola', 'naranja', 'limon', 'limón', 'cerveza', 'vino', 'tinto', 'blanco',
-    'rosado', 'zumo', 'energetica', 'energética', 'monster', 'redbull', 'cafe', 'café', 'capsulas', 'cápsulas',
-    'infusion', 'infusión', 'te', 'té', 'manzanilla', 'poleo', 'horchata', 'batido', 'sidra', 'cava', 'champán',
-    'whisky','leche' ,'ginebra', 'ron', 'vodka', 'licor', 'vermut', 'tónica', 'aquarius', 'fanta', 'nestea',
+  // ── VALIDAR CÓDIGO DE BARRAS ────────────────────────────────────────────────
+  Future<Map<String, dynamic>> validarBarcode({
+    required String ean,
+    required String nombreEsperado,
+  }) async {
+    try {
+      final response = await http
+          .post(
+            Uri.parse('$_baseUrl/products/validar'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'ean': ean,
+              'nombre_esperado': nombreEsperado,
+            }),
+          )
+          .timeout(const Duration(seconds: 10));
 
-    // --- LIMPIEZA, HOGAR Y MASCOTAS (BRUTAL) ---
-    'detergente', 'suavizante', 'lavavajillas', 'fairy', 'lejia', 'lejía', 'amoniaco', 'amoníaco', 'desengrasante',
-    'limpiacristales', 'multiusos', 'fregona', 'escoba', 'estropajo', 'bayeta', 'papel', 'higienico', 'higiénico',
-    'cocina', 'servilletas', 'aluminio', 'film', 'bolsas', 'basura', 'antical', 'pastillas', 'lavadora', 'suelo',
-    'baño', 'muebles', 'insecticida', 'ambientador', 'velas', 'bombillas', 'pilas', 'perro', 'gato', 'pienso',
-    'comida', 'arena', 'snacks', 'correa', 'pájaro', 'canario', 'tortuga',
+      if (response.statusCode == 200) {
+        return jsonDecode(utf8.decode(response.bodyBytes));
+      }
+    } catch (_) {}
 
-    // --- PERFUMERÍA, SALUD Y COSMÉTICA ---
-    'champu', 'champú', 'acondicionador', 'gel', 'ducha', 'jabon', 'jabón', 'manos', 'desodorante', 'colonia',
-    'perfume', 'dientes', 'dentífrico', 'cepillo', 'hilo', 'maquillaje', 'crema', 'solar', 'compresas', 'tampones',
-    'pañales', 'toallitas', 'gomina', 'laca', 'tinte', 'algodon', 'algodón', 'alcohol', 'agua', 'oxigenada',
-    'tiritas', 'preservativos', 'lubricante', 'mascarilla', 'enjuague', 'fixonia', 'perfilador', 'labial',
+    return {
+      'correcto': false,
+      'mensaje_voz': 'No se pudo verificar el producto. Comprueba la conexión.',
+    };
+  }
 
-    // --- DESPENSA, SNACKS Y "LISTO PARA COMER" ---
-    'arroz', 'pasta', 'macarrones', 'espaguetis', 'tallarines', 'fideos', 'cuscus', 'lentejas', 'garbanzos',
-    'alubias', 'aceite', 'oliva', 'girasol', 'vinagre', 'sal', 'pimienta', 'especies', 'caldo', 'ketchup',
-    'mayonesa', 'mostaza', 'aceitunas', 'pepinillos', 'maiz', 'mermelada', 'miel', 'hummus', 'guacamole',
-    'pizza', 'lasaña', 'canelones', 'ensaladilla', 'tortilla', 'patatas', 'chips', 'nachos', 'almendras',
-    'nueces', 'pistachos', 'palomitas', 'chocolate', 'bombones', 'caramelos', 'chicles', 'hielo'
-  
-    // --- LÁCTEOS COMPLETOS ---
-    'leche', 'entera', 'desnatada', 'semi', 'semidesnatada', 'yogur', 'yogures',
-    'griego', 'huevo', 'huevos', 'mantequilla', 'margarina', 'queso', 'fresco',
-    'curado', 'semicurado', 'mozzarella', 'nata', 'cuajada', 'flan', 'natillas',
-    'kefir', 'philadelphia', 'mascarpone', 'quesito', 'quesitos', 'batido',
-    'bífidus', 'proteinas', 'burgos', 'roquefort', 'emmental', 'gouda', 'havarti',
-    'cheddar', 'parmesano', 'brie', 'camembert',
+  // ── BUSCAR POR EAN ──────────────────────────────────────────────────────────
+  Future<ProductoDetalle?> buscarPorEan(String ean) async {
+    try {
+      final response = await http
+          .get(Uri.parse('$_baseUrl/products/barcode/$ean'))
+          .timeout(const Duration(seconds: 10));
 
-    // --- PANADERÍA COMPLETA ---
-    'pan', 'barra', 'baguette', 'integral', 'molde', 'tostado', 'picos', 'colines',
-    'regañás', 'galletas', 'magdalenas', 'bizcocho', 'croissant', 'harina', 'azucar',
-    'azúcar', 'levadura', 'hojaldre', 'muesli', 'granola', 'sobaos', 'ensaimada',
-    'panecillos', 'brioche', 'focaccia', 'chapata', 'palmera', 'tortas', 'mantecados',
-    'polvorón', 'turron', 'turrón', 'mazapán', 'roscon', 'roscón',
+      if (response.statusCode == 200) {
+        final data = jsonDecode(utf8.decode(response.bodyBytes));
+        if (data['encontrado'] == true && data['producto'] != null) {
+          return ProductoDetalle.fromJson(data['producto']);
+        }
+      }
+    } catch (_) {}
+    return null;
+  }
 
-    // --- CHARCUTERÍA Y FIAMBRE ---
-    'embutido', 'fiambre', 'longaniza', 'cecina', 'lomo', 'embuchado', 'lacón',
-    'butifarra', 'morcón', 'salami', 'pepperoni', 'york', 'pavo', 'pechuga',
-
-    // --- CONGELADOS ---
-    'helado', 'helados', 'croquetas', 'pizza', 'lasaña', 'canelones', 'varitas',
-    'bastones', 'patatas', 'guisantes', 'espinacas', 'judias', 'brócoli', 'menestra',
-    'paella', 'arroz', 'pulpo', 'gambas', 'langostinos', 'merluza', 'calamar',
-
-    // --- CONDIMENTOS Y SALSAS ---
-    'tomate', 'frito', 'triturado', 'natural', 'concentrado', 'pisto', 'sofrito',
-    'bechamel', 'carbonara', 'boloñesa', 'curry', 'soja', 'tabasco', 'sriracha',
-    'salsa', 'alioli', 'romesco', 'chimichurri', 'mojo', 'picon',
-
-    // --- APERITIVOS Y SNACKS ---
-    'aceitunas', 'pepinillos', 'anchoas', 'banderillas', 'encurtidos', 'boquerones',
-    'mejillones', 'berberechos', 'almejas', 'navajuelas', 'pulpo', 'calamar',
-    'pipas', 'cacahuetes', 'anacardos', 'pipas', 'gusanitos', 'palomitas',
-
-    // --- ZUMOS Y BEBIDAS NO ALCOHÓLICAS ---
-    'zumo', 'naranja', 'piña', 'manzana', 'melocotón', 'tropical', 'multifrutas',
-    'gazpacho', 'salmorejo', 'smoothie', 'kombucha',
-
-    // --- HIGIENE BUCAL Y CUERPO ---
-    'pasta', 'dentífrica', 'enjuague', 'bucal', 'hilo', 'dental', 'cepillo',
-    'maquinilla', 'espuma', 'afeitar', 'colonia', 'perfume',
-
-    // --- FARMACIA BÁSICA ---
-    'ibuprofeno', 'paracetamol', 'aspirina', 'antiácido', 'probiótico',
-    'vitaminas', 'magnesio', 'melatonina',
-
-    // --- MASCOTAS ---
-    'pienso', 'croquetas', 'paté', 'snacks', 'arena', 'comedero', 'bebedero',
-
-    // --- VARIOS QUE SE OLVIDAN ---
-    'sal', 'azúcar', 'aceite', 'vinagre', 'harina', 'arroz', 'pasta', 'legumbres',
-    'caldo', 'consomé', 'levadura', 'bicarbonato', 'gelatina', 'agar',
-    'canela', 'vainilla', 'cardamomo', 'oregano', 'orégano', 'romero', 'tomillo',
-    'laurel', 'comino', 'pimentón', 'paprika', 'cúrcuma', 'jengibre', 'nuez', 'moscada',
-  };
-
+  // ── EXTRAER PRODUCTOS (compatibilidad con código anterior) ──────────────────
   Future<List<String>> extraerProductos(String texto) async {
-    // 1. Limpieza de símbolos y conversión a minúsculas
-    final textoLimpio = texto.toLowerCase()
-        .replaceAll(RegExp(r'[.!¡?¿,;:\-_"()\[\]]'), ' ');
+    final result = await procesarListaVoz(texto);
+    return result.productosEncontrados.map((p) => p.nombre).toList();
+  }
 
-    // 2. Fragmentación por espacios
-    final palabrasUsuario = textoLimpio.split(RegExp(r'\s+'));
+  // ── FALLBACK: catálogo local simplificado ───────────────────────────────────
+  ListaCompraResult _fallbackLocal(String texto) {
+    final textoLimpio = texto.toLowerCase().replaceAll(RegExp(r'[.!?¿¡,;]'), ' ');
+    final palabras = textoLimpio.split(RegExp(r'\s+'));
 
-    // 3. Filtrado por el catálogo giga-ampliado
-    final productosEncontrados = palabrasUsuario
-        .where((palabra) => 
-          palabra.length > 2 && catalogoMercadona.contains(palabra)
-        )
-        .toSet() 
-        .toList();
+    final Map<String, ProductoDetalle> catalogoBasico = {
+      'leche': const ProductoDetalle(ean: '0', nombre: 'Leche entera Hacendado 1L', pasillo: 3, posicion: 'centro', categoria: 'Lácteos', unidad: 'brik'),
+      'pan': const ProductoDetalle(ean: '1', nombre: 'Pan de molde Hacendado', pasillo: 1, posicion: 'centro', categoria: 'Panadería', unidad: 'bolsa'),
+      'tomate': const ProductoDetalle(ean: '2', nombre: 'Tomates rama 500g', pasillo: 0, posicion: 'centro', categoria: 'Verduras', unidad: 'bandeja'),
+      'pollo': const ProductoDetalle(ean: '3', nombre: 'Pechuga de pollo 500g', pasillo: 4, posicion: 'bajo', categoria: 'Carnicería', unidad: 'bandeja'),
+      'huevos': const ProductoDetalle(ean: '4', nombre: 'Huevos camperos L 12u', pasillo: 3, posicion: 'bajo', categoria: 'Lácteos', unidad: 'caja'),
+      'yogur': const ProductoDetalle(ean: '5', nombre: 'Yogur natural Hacendado', pasillo: 3, posicion: 'bajo', categoria: 'Lácteos', unidad: 'pack'),
+      'arroz': const ProductoDetalle(ean: '6', nombre: 'Arroz largo Hacendado 1kg', pasillo: 6, posicion: 'centro', categoria: 'Despensa', unidad: 'bolsa'),
+      'pasta': const ProductoDetalle(ean: '7', nombre: 'Pasta macarrones 500g', pasillo: 6, posicion: 'alto', categoria: 'Despensa', unidad: 'bolsa'),
+      'agua': const ProductoDetalle(ean: '8', nombre: 'Agua mineral 6x1.5L', pasillo: 8, posicion: 'suelo', categoria: 'Bebidas', unidad: 'pack'),
+    };
 
-    return productosEncontrados;
+    final encontrados = <ProductoDetalle>[];
+    final noEncontrados = <String>[];
+
+    for (final palabra in palabras) {
+      if (palabra.length <= 2) continue;
+      if (catalogoBasico.containsKey(palabra)) {
+        final prod = catalogoBasico[palabra]!;
+        if (!encontrados.any((p) => p.ean == prod.ean)) {
+          encontrados.add(prod);
+        }
+      }
+    }
+
+    encontrados.sort((a, b) => a.pasillo.compareTo(b.pasillo));
+
+    final msg = encontrados.isEmpty
+        ? 'No he encontrado productos. Intenta de nuevo.'
+        : '${encontrados.length} productos encontrados. '
+            'Empieza en el pasillo ${encontrados.first.pasillo}.';
+
+    return ListaCompraResult(
+      productosEncontrados: encontrados,
+      productosNoEncontrados: noEncontrados,
+      mensajeVoz: msg,
+    );
   }
 }
