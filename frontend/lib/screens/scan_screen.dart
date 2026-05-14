@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import '../services/product_service.dart';
 
 class ScanScreen extends StatefulWidget {
   final List<String> productos;
+  final List<ProductoDetalle>? productosDetalle;
 
-  const ScanScreen({super.key, required this.productos});
+  const ScanScreen({
+    super.key,
+    required this.productos,
+    this.productosDetalle,
+  });
 
   @override
   State<ScanScreen> createState() => _ScanScreenState();
@@ -14,6 +20,7 @@ class ScanScreen extends StatefulWidget {
 class _ScanScreenState extends State<ScanScreen> {
   final FlutterTts _tts = FlutterTts();
   final MobileScannerController _cameraController = MobileScannerController();
+  final ProductService _productService = ProductService();
   int _productoActual = 0;
   bool _productoConfirmado = false;
 
@@ -32,19 +39,37 @@ class _ScanScreenState extends State<ScanScreen> {
 
   Future<void> _anunciarProductoActual() async {
     if (widget.productos.isEmpty) return;
-    final producto = widget.productos[_productoActual];
-    await _tts.speak('Dirígete a buscar $producto. Cuando lo encuentres, escanealo para confirmarlo.');
+    final detalle = widget.productosDetalle?[_productoActual];
+    if (detalle != null) {
+      await _tts.speak(detalle.instruccionVoz);
+    } else {
+      final producto = widget.productos[_productoActual];
+      await _tts.speak(
+        'Dirígete a buscar $producto. Cuando lo encuentres, escanealo para confirmarlo.',
+      );
+    }
   }
 
-  void _onCodigoDetectado(BarcodeCapture capture) {
+  void _onCodigoDetectado(BarcodeCapture capture) async {
     if (_productoConfirmado) return;
     final codigo = capture.barcodes.first.rawValue;
     if (codigo == null) return;
+
     setState(() => _productoConfirmado = true);
-    _tts.speak('Producto añadido correctamente.');
-    Future.delayed(const Duration(seconds: 2), () {
-      _siguienteProducto();
-    });
+
+    final detalle = widget.productosDetalle?[_productoActual];
+    if (detalle != null) {
+      // TODO: llamar al backend para validar
+      final resultado = await _productService.validarBarcode(
+        ean: codigo,
+        nombreEsperado: detalle.nombre,
+      );
+      await _tts.speak(resultado['mensaje_voz'] ?? 'Producto escaneado.');
+    } else {
+      await _tts.speak('Producto escaneado.');
+    }
+
+    Future.delayed(const Duration(seconds: 2), _siguienteProducto);
   }
 
   void _siguienteProducto() {
@@ -106,6 +131,13 @@ class _ScanScreenState extends State<ScanScreen> {
                         color: Color(0xFF2E7D32),
                       ),
                     ),
+                    const Spacer(),
+                    IconButton(
+                      onPressed: _anunciarProductoActual,
+                      icon: const Icon(Icons.volume_up),
+                      iconSize: 32,
+                      color: const Color(0xFF2E7D32),
+                    ),
                   ],
                 ),
               ),
@@ -137,9 +169,10 @@ class _ScanScreenState extends State<ScanScreen> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      const Text(
-                        'Pasillo pendiente de backend',
-                        style: TextStyle(
+                      Text(
+                        widget.productosDetalle?[_productoActual].descripcionPasillo
+                            ?? 'Pasillo pendiente de backend',
+                        style: const TextStyle(
                           fontSize: 18,
                           color: Colors.white60,
                           fontStyle: FontStyle.italic,
