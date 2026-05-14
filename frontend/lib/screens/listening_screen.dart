@@ -53,15 +53,11 @@ class _ListeningScreenState extends State<ListeningScreen>
   }
 
   Future<void> _confirmar() async {
-  if (_textoDetectado.isEmpty) return;
-  final productos = await _productService.extraerProductos(_textoDetectado);
-  setState(() => _listaProductos = productos);
-  Navigator.pushNamed(
-    context,
-    '/scan',
-    arguments: productos,
-  );
-}
+    if (_textoDetectado.isEmpty) return;
+    final productos = await _productService.extraerProductos(_textoDetectado);
+    setState(() => _listaProductos = productos);
+    Navigator.pushNamed(context, '/scan', arguments: productos);
+  }
 
   @override
   void dispose() {
@@ -88,76 +84,79 @@ class _ListeningScreenState extends State<ListeningScreen>
         child: SafeArea(
           child: Column(
             children: [
+
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: Row(
                   children: [
                     IconButton(
                       onPressed: () => Navigator.pop(context),
                       icon: const Icon(Icons.arrow_back_ios),
-                      iconSize: 28,
-                      color: const Color(0xFF00874A),
+                      iconSize: 42,
+                      color: const Color(0xFF2E7D32),
                     ),
                     const Text(
                       'Tu lista de la compra',
                       style: TextStyle(
-                        fontSize: 22,
+                        fontSize: 30,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF00874A),
+                        color: Color(0xFF2E7D32),
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 34), // ← después de la barra superior
+
+              const SizedBox(height: 24),
+
               Text(
                 _escuchando ? 'Escuchando...' : 'Esto es lo que has dicho',
                 style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w500,
-                  color: _escuchando ? Colors.redAccent : const Color(0xFF4A3728),
+                  fontSize: 28,
+                  fontWeight: FontWeight.w600,
+                  color: _escuchando ? Colors.redAccent : const Color(0xFF2E7D32),
                 ),
               ),
-              const SizedBox(height: 24),
+
+              const SizedBox(height: 20),
+
               Container(
-                margin: const EdgeInsets.symmetric(horizontal: 32),
-                padding: const EdgeInsets.all(20),
-                constraints: const BoxConstraints(minHeight: 100),
+                margin: const EdgeInsets.symmetric(horizontal: 24),
+                padding: const EdgeInsets.all(28),
+                constraints: const BoxConstraints(minHeight: 130),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.7),
+                  color: const Color(0xFF2E7D32),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: const Color(0xFF00874A).withOpacity(0.3),
-                    width: 1.5,
-                  ),
                 ),
                 child: Text(
                   _textoDetectado.isEmpty
                       ? 'Di algo como:\n"quiero leche, tomate y pan"'
                       : '"$_textoDetectado"',
                   style: TextStyle(
-                    fontSize: 20,
-                    color: _textoDetectado.isEmpty ? Colors.grey : const Color(0xFF2E2E2E),
+                    fontSize: 26,
+                    color: _textoDetectado.isEmpty ? Colors.white60 : Colors.white,
                     fontStyle: _textoDetectado.isEmpty ? FontStyle.italic : FontStyle.normal,
                     height: 1.5,
                   ),
                   textAlign: TextAlign.center,
                 ),
               ),
-              const SizedBox(height: 48),
+
+              const SizedBox(height: 36),
+
               ScaleTransition(
                 scale: _escuchando ? _animScale : const AlwaysStoppedAnimation(1.0),
                 child: GestureDetector(
                   onTap: _escuchando ? _parar : _iniciarEscucha,
                   child: Container(
-                    width: 200,
-                    height: 200,
+                    width: 280 ,
+                    height: 280 ,
                     decoration: BoxDecoration(
-                      color: _escuchando ? Colors.redAccent : const Color(0xFF00874A),
+                      color: _escuchando ? Colors.redAccent : const Color(0xFF2E7D32),
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: (_escuchando ? Colors.redAccent : const Color(0xFF00874A))
+                          color: (_escuchando ? Colors.redAccent : const Color(0xFF2E7D32))
                               .withOpacity(0.35),
                           blurRadius: 40,
                           offset: const Offset(0, 10),
@@ -166,35 +165,38 @@ class _ListeningScreenState extends State<ListeningScreen>
                     ),
                     child: Icon(
                       _escuchando ? Icons.stop : Icons.mic,
-                      size: 100,
+                      size: 160,
                       color: Colors.white,
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 60),
+
+              const SizedBox(height: 36),
+
               if (!_escuchando && _textoDetectado.isNotEmpty)
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 22),
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: _confirmar,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF00874A),
+                        backgroundColor: const Color(0xFF2E7D32),
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 50),
+                        padding: const EdgeInsets.symmetric(vertical: 32),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
                       ),
                       child: const Text(
                         'Confirmar lista',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                        style: TextStyle(fontSize: 28, fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),
                 ),
+
               const Spacer(),
             ],
           ),

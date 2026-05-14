@@ -33,7 +33,6 @@ class _ScanScreenState extends State<ScanScreen> {
   Future<void> _anunciarProductoActual() async {
     if (widget.productos.isEmpty) return;
     final producto = widget.productos[_productoActual];
-    // TODO: cuando haya backend, añadir pasillo y posición
     await _tts.speak('Dirígete a buscar $producto. Cuando lo encuentres, escanealo para confirmarlo.');
   }
 
@@ -41,12 +40,8 @@ class _ScanScreenState extends State<ScanScreen> {
     if (_productoConfirmado) return;
     final codigo = capture.barcodes.first.rawValue;
     if (codigo == null) return;
-
     setState(() => _productoConfirmado = true);
-
-    // TODO: llamar al backend con el código para validar el producto
-    _tts.speak('Producto añadido correctamente. ');
-    
+    _tts.speak('Producto añadido correctamente.');
     Future.delayed(const Duration(seconds: 2), () {
       _siguienteProducto();
     });
@@ -60,8 +55,10 @@ class _ScanScreenState extends State<ScanScreen> {
       });
       _anunciarProductoActual();
     } else {
-      _tts.speak('Lista completada. ¡Compra terminada!');
-      // TODO: navegar a pantalla de resumen
+      _tts.speak('Lista completada. Dirígete a caja.');
+      Future.delayed(const Duration(seconds: 3), () {
+        Navigator.pushNamed(context, '/cajas');
+      });
     }
   }
 
@@ -91,68 +88,60 @@ class _ScanScreenState extends State<ScanScreen> {
           child: Column(
             children: [
 
-              // ── BARRA SUPERIOR ──────────────────────────────
               Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: Row(
                   children: [
                     IconButton(
                       onPressed: () => Navigator.pop(context),
                       icon: const Icon(Icons.arrow_back_ios),
-                      iconSize: 28,
-                      color: const Color(0xFF00874A),
+                      iconSize: 42,
+                      color: const Color(0xFF2E7D32),
                     ),
                     const Text(
                       'Navegando',
                       style: TextStyle(
-                        fontSize: 22,
+                        fontSize: 30,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF00874A),
+                        color: Color(0xFF2E7D32),
                       ),
                     ),
                   ],
                 ),
               ),
 
-              // ── PRODUCTO ACTUAL ──────────────────────────────
               if (widget.productos.isNotEmpty)
                 Container(
                   margin: const EdgeInsets.symmetric(horizontal: 24),
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.7),
+                    color: const Color(0xFF2E7D32),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: const Color(0xFF00874A).withOpacity(0.3),
-                      width: 1.5,
-                    ),
                   ),
                   child: Column(
                     children: [
                       Text(
                         '${_productoActual + 1} de ${widget.productos.length}',
                         style: const TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey,
+                          fontSize: 20,
+                          color: Colors.white70,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         widget.productos[_productoActual],
                         style: const TextStyle(
-                          fontSize: 32,
+                          fontSize: 38,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF00874A),
+                          color: Colors.white,
                         ),
                       ),
                       const SizedBox(height: 8),
-                      // TODO: mostrar pasillo y posición del backend
                       const Text(
                         'Pasillo pendiente de backend',
                         style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey,
+                          fontSize: 18,
+                          color: Colors.white60,
                           fontStyle: FontStyle.italic,
                         ),
                       ),
@@ -162,31 +151,31 @@ class _ScanScreenState extends State<ScanScreen> {
 
               const SizedBox(height: 16),
 
-              // ── CÁMARA ───────────────────────────────────────
               Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: MobileScanner(
-                    controller: _cameraController,
-                    onDetect: _onCodigoDetectado,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: MobileScanner(
+                      controller: _cameraController,
+                      onDetect: _onCodigoDetectado,
+                    ),
                   ),
                 ),
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
 
-              // ── BOTÓN SIGUIENTE MANUAL ───────────────────────
               Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                 child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: _siguienteProducto,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF00874A),
+                      backgroundColor: const Color(0xFF2E7D32),
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      padding: const EdgeInsets.symmetric(vertical: 32),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -194,13 +183,15 @@ class _ScanScreenState extends State<ScanScreen> {
                     child: const Text(
                       'Siguiente producto',
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 28,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
                 ),
               ),
+
+              const SizedBox(height: 16),
             ],
           ),
         ),

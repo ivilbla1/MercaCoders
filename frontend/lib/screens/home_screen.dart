@@ -12,8 +12,8 @@ class HomeScreen extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color.fromARGB(255, 255, 255, 255),
-              Color.fromARGB(255, 255, 255, 255),
+              Color(0xFFFFFFFF),
+              Color(0xFFFFFFFF),
               Color(0xFFEDE0D0),
             ],
           ),
@@ -22,12 +22,8 @@ class HomeScreen extends StatelessWidget {
           child: Column(
             children: [
 
-              // ── BARRA SUPERIOR ──────────────────────────────
               Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -35,21 +31,20 @@ class HomeScreen extends StatelessWidget {
                       onPressed: () {},
                       icon: const Icon(Icons.settings_outlined),
                       iconSize: 40,
-                      color: Color(0xFF00874A),   // verde Mercadona
+                      color: const Color(0xFF2E7D32),
                       padding: const EdgeInsets.all(12),
                     ),
                     IconButton(
                       onPressed: () => Navigator.pushNamed(context, '/profile'),
                       icon: const Icon(Icons.account_circle_outlined),
                       iconSize: 44,
-                      color: Color(0xFF00874A),   // verde Mercadona
+                      color: const Color(0xFF2E7D32),
                       padding: const EdgeInsets.all(12),
                     ),
                   ],
                 ),
               ),
 
-              // ── LOGO ─────────────────────────────────────────
               const SizedBox(height: 16),
               Image.asset(
                 'assets/mercaVision.jpg',
@@ -57,31 +52,29 @@ class HomeScreen extends StatelessWidget {
                 fit: BoxFit.contain,
               ),
 
-              // ── COMENZAR COMPRA ──────────────────────────────
               const SizedBox(height: 32),
               const Text(
                 'Comenzar compra',
                 style: TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF00874A),       // verde Mercadona
+                  color: Color(0xFF2E7D32),
                   letterSpacing: 0.5,
                 ),
               ),
               const SizedBox(height: 32),
 
-              // ── BOTÓN MICRÓFONO ──────────────────────────────
               GestureDetector(
                 onTap: () => Navigator.pushNamed(context, '/listening'),
                 child: Container(
                   width: 280,
                   height: 280,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF00874A), // verde Mercadona
+                    color: const Color(0xFF2E7D32),
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF00874A).withOpacity(0.35),
+                        color: const Color(0xFF2E7D32).withOpacity(0.35),
                         blurRadius: 44,
                         offset: const Offset(0, 10),
                       ),
@@ -89,7 +82,7 @@ class HomeScreen extends StatelessWidget {
                   ),
                   child: const Icon(
                     Icons.mic,
-                    size: 140,                      // micro grande
+                    size: 140,
                     color: Colors.white,
                   ),
                 ),
