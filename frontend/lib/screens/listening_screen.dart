@@ -34,10 +34,7 @@ class _ListeningScreenState extends State<ListeningScreen>
       CurvedAnimation(parent: _animController, curve: Curves.easeInOut),
     );
     _configurarTts();
-    Future.delayed(
-      const Duration(milliseconds: 600),
-      _anunciarPantalla,
-    );
+    Future.delayed(const Duration(milliseconds: 600), _anunciarPantalla);
   }
 
   Future<void> _configurarTts() async {
@@ -68,9 +65,7 @@ class _ListeningScreenState extends State<ListeningScreen>
           _escuchando = false;
         });
         _animController.stop();
-        _tts.speak(
-          'Has dicho: $texto. Pulsa Confirmar lista para continuar.',
-        );
+        _tts.speak('Has dicho: $texto. Pulsa Confirmar lista para continuar.');
       },
     );
   }
@@ -84,32 +79,20 @@ class _ListeningScreenState extends State<ListeningScreen>
 
   Future<void> _confirmar() async {
     if (_textoDetectado.isEmpty) return;
-
     setState(() => _procesando = true);
     await _tts.speak('Buscando tus productos en la tienda.');
-
     final resultado = await _productService.procesarListaVoz(_textoDetectado);
-
     if (!mounted) return;
     setState(() => _procesando = false);
-
     if (resultado.productosEncontrados.isEmpty) {
-      await _tts.speak(
-        'No he encontrado ningún producto. Por favor, vuelve a dictar tu lista.',
-      );
+      await _tts.speak('No he encontrado ningún producto. Por favor, vuelve a dictar tu lista.');
       return;
     }
-
     await _tts.speak(resultado.mensajeVoz);
-
-    Navigator.pushNamed(
-      context,
-      '/scan',
-      arguments: {
-        'productos': resultado.productosEncontrados.map((p) => p.nombre).toList(),
-        'productosDetalle': resultado.productosEncontrados,
-      },
-    );
+    Navigator.pushNamed(context, '/scan', arguments: {
+      'productos': resultado.productosEncontrados.map((p) => p.nombre).toList(),
+      'productosDetalle': resultado.productosEncontrados,
+    });
   }
 
   @override
@@ -122,6 +105,9 @@ class _ListeningScreenState extends State<ListeningScreen>
 
   @override
   Widget build(BuildContext context) {
+    final h = MediaQuery.of(context).size.height;
+    final microSize = h * 0.30;
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -139,15 +125,13 @@ class _ListeningScreenState extends State<ListeningScreen>
           child: Column(
             children: [
 
+              // ── BARRA SUPERIOR ──────────────────────────────
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: Row(
                   children: [
                     IconButton(
-                      onPressed: () {
-                        _tts.stop();
-                        Navigator.pop(context);
-                      },
+                      onPressed: () { _tts.stop(); Navigator.pop(context); },
                       icon: const Icon(Icons.arrow_back_ios),
                       iconSize: 36,
                       color: _verde,
@@ -159,7 +143,7 @@ class _ListeningScreenState extends State<ListeningScreen>
                       child: Text(
                         'Tu lista de la compra',
                         style: TextStyle(
-                          fontSize: 26,
+                          fontSize: 24,
                           fontWeight: FontWeight.w600,
                           color: _verde,
                         ),
@@ -177,23 +161,23 @@ class _ListeningScreenState extends State<ListeningScreen>
                 ),
               ),
 
-              const SizedBox(height: 24),
-
+              // ── ESTADO ─────────────────────────────────────
               Text(
                 _escuchando ? 'Escuchando...' : 'Esto es lo que has dicho',
                 style: TextStyle(
-                  fontSize: 28,
+                  fontSize: 22,
                   fontWeight: FontWeight.w600,
                   color: _escuchando ? Colors.redAccent : _verde,
                 ),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
 
+              // ── RECUADRO TEXTO ──────────────────────────────
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 24),
-                padding: const EdgeInsets.all(28),
-                constraints: const BoxConstraints(minHeight: 130),
+                padding: const EdgeInsets.all(18),
+                constraints: const BoxConstraints(minHeight: 90),
                 decoration: BoxDecoration(
                   color: _verde,
                   borderRadius: BorderRadius.circular(20),
@@ -203,37 +187,31 @@ class _ListeningScreenState extends State<ListeningScreen>
                       ? 'Di algo como:\n"quiero leche, tomate y pan"'
                       : '"$_textoDetectado"',
                   style: TextStyle(
-                    fontSize: 26,
-                    color: _textoDetectado.isEmpty
-                        ? Colors.white60
-                        : Colors.white,
-                    fontStyle: _textoDetectado.isEmpty
-                        ? FontStyle.italic
-                        : FontStyle.normal,
+                    fontSize: 20,
+                    color: _textoDetectado.isEmpty ? Colors.white60 : Colors.white,
+                    fontStyle: _textoDetectado.isEmpty ? FontStyle.italic : FontStyle.normal,
                     height: 1.5,
                   ),
                   textAlign: TextAlign.center,
                 ),
               ),
 
-              const SizedBox(height: 36),
+              const SizedBox(height: 42),
 
+              // ── BOTÓN MICRÓFONO ──────────────────────────────
               ScaleTransition(
-                scale: _escuchando
-                    ? _animScale
-                    : const AlwaysStoppedAnimation(1.0),
+                scale: _escuchando ? _animScale : const AlwaysStoppedAnimation(1.0),
                 child: GestureDetector(
                   onTap: _escuchando ? _parar : _iniciarEscucha,
                   child: Container(
-                    width: 260,
-                    height: 260,
+                    width: microSize,
+                    height: microSize,
                     decoration: BoxDecoration(
                       color: _escuchando ? Colors.redAccent : _verde,
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: (_escuchando ? Colors.redAccent : _verde)
-                              .withOpacity(0.35),
+                          color: (_escuchando ? Colors.redAccent : _verde).withOpacity(0.35),
                           blurRadius: 40,
                           offset: const Offset(0, 10),
                         ),
@@ -241,34 +219,35 @@ class _ListeningScreenState extends State<ListeningScreen>
                     ),
                     child: Icon(
                       _escuchando ? Icons.stop : Icons.mic,
-                      size: 140,
+                      size: microSize * 0.5,
                       color: Colors.white,
                     ),
                   ),
                 ),
               ),
 
-              const SizedBox(height: 36),
+              const Spacer(),
 
+              // ── INDICADOR DE CARGA ───────────────────────────
               if (_procesando)
-                const Column(
-                  children: [
-                    CircularProgressIndicator(color: _verde),
-                    SizedBox(height: 12),
-                    Text(
-                      'Buscando productos...',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: _verde,
-                        fontWeight: FontWeight.w500,
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 12),
+                  child: Column(
+                    children: [
+                      CircularProgressIndicator(color: _verde),
+                      SizedBox(height: 8),
+                      Text(
+                        'Buscando productos...',
+                        style: TextStyle(fontSize: 18, color: _verde, fontWeight: FontWeight.w500),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
 
+              // ── BOTÓN CONFIRMAR ──────────────────────────────
               if (!_escuchando && !_procesando && _textoDetectado.isNotEmpty)
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  padding: const EdgeInsets.only(left: 24, right: 24, bottom: 16),
                   child: SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -276,23 +255,18 @@ class _ListeningScreenState extends State<ListeningScreen>
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _verde,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 32),
+                        padding: const EdgeInsets.symmetric(vertical: 22),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
                       ),
                       child: const Text(
                         'Confirmar lista',
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),
                 ),
-
-              const Spacer(),
             ],
           ),
         ),

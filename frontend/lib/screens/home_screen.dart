@@ -47,6 +47,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final h = MediaQuery.of(context).size.height;
+    final microSize = h * 0.35;
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -88,31 +91,30 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
 
               // ── LOGO ─────────────────────────────────────────
-              const SizedBox(height: 8),
-              Image.asset(
-                'assets/mercaVision.jpg',
-                height: 220,
-                fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) => const Icon(
-                  Icons.storefront,
-                  size: 120,
-                  color: _verde,
+              Expanded(
+                flex: 3,
+                child: Image.asset(
+                  'assets/mercaVision.jpg',
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => const Icon(
+                    Icons.storefront, size: 120, color: _verde,
+                  ),
                 ),
               ),
 
               // ── TEXTO ────────────────────────────────────────
-              const SizedBox(height: 8),
               const Text(
                 'Comenzar compra',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 34,
+                  fontSize: 28,
                   fontWeight: FontWeight.w700,
                   color: _verde,
                   letterSpacing: 0.5,
                 ),
               ),
-              const SizedBox(height: 16),
+
+              const SizedBox(height: 32),
 
               // ── BOTÓN MICRÓFONO ──────────────────────────────
               GestureDetector(
@@ -121,8 +123,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   Navigator.pushNamed(context, '/listening');
                 },
                 child: Container(
-                  width: 280,
-                  height: 280,
+                  width: microSize,
+                  height: microSize,
                   decoration: BoxDecoration(
                     color: _verde,
                     shape: BoxShape.circle,
@@ -134,9 +136,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ],
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.mic,
-                    size: 140,
+                    size: microSize * 0.5,
                     color: Colors.white,
                   ),
                 ),
@@ -146,16 +148,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
               // ── BOTÓN REPETIR INSTRUCCIONES ──────────────────
               Padding(
-                padding: const EdgeInsets.only(bottom: 24, left: 24, right: 24),
+                padding: const EdgeInsets.only(bottom: 16, left: 24, right: 24),
                 child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
                     onPressed: _anunciarPantalla,
-                    icon: const Icon(Icons.volume_up, size: 32, color: Colors.white),
+                    icon: const Icon(Icons.volume_up, size: 28, color: Colors.white),
                     label: const Text(
                       'Repetir instrucciones',
                       style: TextStyle(
-                        fontSize: 22,
+                        fontSize: 20,
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
                       ),
@@ -163,7 +165,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: _verde,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 22),
+                      padding: const EdgeInsets.symmetric(vertical: 18),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -204,12 +206,12 @@ class _BotonAccesible extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icono, size: 40, color: Colors.white),
+            Icon(icono, size: 36, color: Colors.white),
             const SizedBox(height: 4),
             Text(
               etiqueta,
               style: const TextStyle(
-                fontSize: 15,
+                fontSize: 14,
                 color: Colors.white,
                 fontWeight: FontWeight.w600,
               ),

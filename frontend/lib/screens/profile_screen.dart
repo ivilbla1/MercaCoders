@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'dart:io';
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
@@ -45,16 +45,16 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 12),
               const Icon(
                 Icons.account_circle,
-                size: 110,
+                size: 90,
                 color: Color(0xFF2E7D32),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 12),
 
               Expanded(
-                child: Padding(
+                child: SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Column(
                     children: [
@@ -84,12 +84,12 @@ class ProfileScreen extends StatelessWidget {
               ),
 
               Padding(
-                padding: const EdgeInsets.all(32),
+                padding: const EdgeInsets.all(20),
                 child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
-                    onPressed: () {},
-                    icon: const Icon(Icons.logout, size: 26, color: Colors.white),
+                    onPressed: () => exit(0),
+                    icon: const Icon(Icons.logout, size: 24, color: Colors.white),
                     label: const Text(
                       'Cerrar sesión',
                       style: TextStyle(fontSize: 20),
@@ -97,7 +97,7 @@ class ProfileScreen extends StatelessWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFD32F2F),
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      padding: const EdgeInsets.symmetric(vertical: 18),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -105,7 +105,6 @@ class ProfileScreen extends StatelessWidget {
                   ),
                 ),
               ),
-
             ],
           ),
         ),
@@ -119,37 +118,40 @@ class ProfileScreen extends StatelessWidget {
     required String valor,
   }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
         color: const Color(0xFF2E7D32),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         children: [
-          Icon(icono, color: Colors.white, size: 36),
-          const SizedBox(width: 16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                etiqueta,
-                style: const TextStyle(
-                  fontSize: 15,
-                  color: Colors.white70,
-                  fontWeight: FontWeight.w500,
+          Icon(icono, color: Colors.white, size: 32),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  etiqueta,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Colors.white70,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                valor,
-                style: const TextStyle(
-                  fontSize: 22,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
+                const SizedBox(height: 4),
+                Text(
+                  valor,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
