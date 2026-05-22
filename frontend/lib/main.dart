@@ -3,9 +3,11 @@ import 'screens/home_screen.dart';
 import 'screens/scan_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/listening_screen.dart';
+import 'screens/camera_recognition_screen.dart';
 import 'services/product_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MercaVisionApp());
 }
 
@@ -46,6 +48,8 @@ class MercaVisionApp extends StatelessWidget {
             return MaterialPageRoute(builder: (_) => const ProfileScreen());
           case '/listening':
             return MaterialPageRoute(builder: (_) => const ListeningScreen());
+          case '/camera':
+            return MaterialPageRoute(builder: (_) => const CameraRecognitionScreen());
           case '/scan':
             // Acepta tanto List<String> (flujo antiguo) como Map con detalle
             final args = settings.arguments;

@@ -30,7 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
     await _tts.speak(
       'Bienvenido a MercaVision. '
       'Tienes dos botones en la barra superior: Configuración a la izquierda y Perfil a la derecha. '
-      'Pulsa el botón grande del micrófono para empezar a dictar tu lista de la compra.',
+      'Pulsa el botón grande de la cámara para reconocer productos con el modelo.',
     );
   }
 
@@ -116,11 +116,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
               const SizedBox(height: 32),
 
-              // ── BOTÓN MICRÓFONO ──────────────────────────────
+              // ── BOTÓN CÁMARA ──────────────────────────────
               GestureDetector(
                 onTap: () {
-                  _hablar('Abriendo reconocimiento de voz.');
-                  Navigator.pushNamed(context, '/listening');
+                  _hablar('Abriendo reconocimiento por cámara.');
+                  Navigator.pushNamed(context, '/camera');
                 },
                 child: Container(
                   width: microSize,
@@ -137,7 +137,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                   child: Icon(
-                    Icons.mic,
+                    Icons.camera_alt,
                     size: microSize * 0.5,
                     color: Colors.white,
                   ),

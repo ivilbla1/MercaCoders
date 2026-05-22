@@ -18,6 +18,8 @@ dependencies:
   # Cámara y escáner
   camera: ^0.10.5
   mobile_scanner: ^5.1.0
+  tflite_flutter: ^0.12.1
+  image: ^4.0.17
 
   # Navegación entre pantallas
   go_router: ^13.2.0
@@ -35,3 +37,5 @@ flutter:
   uses-material-design: true
   assets:
     - assets/
+    - assets/models/tflite_learn_978907_15.tflite
+    - assets/models/labels.txt
