@@ -8,11 +8,11 @@ import '../services/edge_impulse_service.dart';
 const _verde = Color(0xFF2E7D32);
 
 // Umbrales de la lógica de auto-captura
-const double _confidenceThreshold = 0.80;   // Confianza mínima para aceptar
-const int _consensusCount = 2;              // Predicciones iguales seguidas necesarias
-const int _maxAttempts = 15;                // Intentos antes de pedir reposicionar
+const double _confidenceThreshold = 0.80;
+const int _consensusCount = 2;
+const int _maxAttempts = 15;
 const Duration _captureInterval = Duration(milliseconds: 700);
-const Duration _resetDelay = Duration(seconds: 4); // Damos 4 segundos para que escuchen bien antes de reiniciar
+const Duration _resetDelay = Duration(seconds: 4);
 
 class CameraRecognitionScreen extends StatefulWidget {
   const CameraRecognitionScreen({super.key});
@@ -27,11 +27,10 @@ class _CameraRecognitionScreenState extends State<CameraRecognitionScreen> {
   final FlutterTts _flutterTts = FlutterTts();
 
   bool _initialized = false;
-  bool _isScanning = false;     
-  bool _isProcessing = false;   
+  bool _isScanning = false;
+  bool _isProcessing = false;
   String? _error;
 
-  // Estado del escaneo
   String? _currentLabel;
   double? _currentConfidence;
   String? _confirmedLabel;
@@ -47,19 +46,15 @@ class _CameraRecognitionScreenState extends State<CameraRecognitionScreen> {
   @override
   void initState() {
     super.initState();
-    // EJECUCIÓN EN PARALELO:
-    _initTtsAndGreet();         // 1. Configura la voz y saluda DE INMEDIATO
-    _initializeCameraAndModel(); // 2. En segundo plano carga la cámara y el modelo
+    _initTtsAndGreet();
+    _initializeCameraAndModel();
   }
 
-  /// Inicializa el motor de voz al instante y da instrucciones al usuario invidente
   Future<void> _initTtsAndGreet() async {
     try {
       await _flutterTts.setLanguage("es-ES");
-      await _flutterTts.setSpeechRate(0.55); // Fluido pero entendible
+      await _flutterTts.setSpeechRate(0.55);
       await _flutterTts.setVolume(1.0);
-      
-      // Saludo instantáneo sin esperar a la cámara
       await _flutterTts.speak("Iniciando Merca Coders. Por favor, apunta con la cámara hacia el producto.");
     } catch (e) {
       print("Error al iniciar TTS de inmediato: $e");
@@ -79,17 +74,13 @@ class _CameraRecognitionScreenState extends State<CameraRecognitionScreen> {
         ResolutionPreset.medium,
         enableAudio: false,
       );
-      
-      // Estas dos líneas toman tiempo en el hardware del dispositivo
+
       await _controller!.initialize();
       _edgeService = await EdgeImpulseService.load();
 
       if (!mounted) return;
       setState(() => _initialized = true);
-      
-      // Avisamos de forma fluida que ya estamos escaneando de verdad
       await _flutterTts.speak("Cámara lista. Buscando producto.");
-      
       _startScanning();
     } catch (e) {
       setState(() {
@@ -136,9 +127,7 @@ class _CameraRecognitionScreenState extends State<CameraRecognitionScreen> {
 
   Future<void> _captureAndAnalyze() async {
     if (!_isScanning || _isProcessing) return;
-    if (_controller == null || !_controller!.value.isInitialized || _edgeService == null) {
-      return;
-    }
+    if (_controller == null || !_controller!.value.isInitialized || _edgeService == null) return;
 
     _isProcessing = true;
     _attempts++;
@@ -180,14 +169,12 @@ class _CameraRecognitionScreenState extends State<CameraRecognitionScreen> {
             _confirmedConfidence = topConfidence;
           });
 
-          // Locución del producto
           if (topLabel.toLowerCase() != 'unknown') {
             await _flutterTts.speak(topLabel);
           } else {
             await _flutterTts.speak("Producto desconocido, por favor reubica el objeto.");
           }
 
-          // Espera adaptada para el usuario antes de reactivar el bucle automático
           _resetTimer = Timer(_resetDelay, () {
             if (mounted) _startScanning();
           });
@@ -209,11 +196,8 @@ class _CameraRecognitionScreenState extends State<CameraRecognitionScreen> {
     if (!mounted || !_isScanning) return;
 
     if (_attempts >= _maxAttempts) {
-      _stopScanning(
-        finalStatus: 'Tiempo límite alcanzado. Mueve el producto.',
-      );
+      _stopScanning(finalStatus: 'Tiempo límite alcanzado. Mueve el producto.');
       _flutterTts.speak("No encuentro ningún producto conocido. Por favor, muévelo un poco.");
-      
       _resetTimer = Timer(const Duration(seconds: 5), () {
         if (mounted) _startScanning();
       });
@@ -237,63 +221,108 @@ class _CameraRecognitionScreenState extends State<CameraRecognitionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Nota: Mantenemos la interfaz scannable por si un familiar o tú queréis ver qué pasa en pantalla
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: _verde,
-        title: const Text('MercaCoders Scanner'),
-        centerTitle: true,
-      ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFFFFFFFF), Color(0xFFF5EFE6), Color(0xFFEDE0D0)],
+      backgroundColor: Colors.white,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(100),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(8, 36, 8, 0),
+            child: AppBar(
+              backgroundColor: _verde,
+              foregroundColor: Colors.white,
+              elevation: 2,
+              toolbarHeight: 64,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(16)),
+              ),
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 28),
+                onPressed: () => Navigator.of(context).maybePop(),
+              ),
+              title: const Text(
+                'MercaCoders Scanner',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.3,
+                ),
+              ),
+              centerTitle: true,
+            ),
           ),
         ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              const SizedBox(height: 12),
-              if (_error != null)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                  child: Text(_error!, style: const TextStyle(fontSize: 18, color: Colors.redAccent), textAlign: TextAlign.center),
-                )
-              else if (!_initialized)
-                const Expanded(child: Center(child: CircularProgressIndicator()))
-              else
-                Expanded(
-                  child: Stack(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: ClipRRect(borderRadius: BorderRadius.circular(24), child: CameraPreview(_controller!)),
+      ),
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const SizedBox(height: 12),
+            if (_error != null)
+              Expanded(
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Text(_error!, style: const TextStyle(fontSize: 20, color: Colors.redAccent), textAlign: TextAlign.center),
+                  ),
+                ),
+              )
+            else if (!_initialized)
+              const Expanded(
+                child: Center(
+                  child: CircularProgressIndicator(color: _verde, strokeWidth: 4),
+                ),
+              )
+            else
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: _verde, width: 5),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: CameraPreview(_controller!),
+                    ),
+                  ),
+                ),
+              ),
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 20),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 20),
+                decoration: BoxDecoration(
+                  color: _verde,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: _confirmedLabel != null
+                    ? Column(
+                        children: [
+                          const Text(
+                            '¡Identificado!',
+                            style: TextStyle(fontSize: 20, color: Colors.white70, fontWeight: FontWeight.w600),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            _confirmedLabel!,
+                            style: const TextStyle(fontSize: 34, color: Colors.white, fontWeight: FontWeight.w900),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      )
+                    : Text(
+                        _statusMessage ?? 'Esperando…',
+                        style: const TextStyle(fontSize: 24, color: Colors.white, fontWeight: FontWeight.w700),
+                        textAlign: TextAlign.center,
                       ),
-                    ],
-                  ),
-                ),
-              const SizedBox(height: 16),
-              if (_confirmedLabel != null)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Column(
-                    children: [
-                      Text('¡Identificado!', style: TextStyle(fontSize: 18, color: _verde, fontWeight: FontWeight.w700)),
-                      const SizedBox(height: 6),
-                      Text(_confirmedLabel!, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
-                    ],
-                  ),
-                )
-              else if (_statusMessage != null)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Text(_statusMessage!, style: const TextStyle(fontSize: 16, color: Colors.black87), textAlign: TextAlign.center),
-                ),
-              const SizedBox(height: 24),
-            ],
-          ),
+              ),
+            ),
+          ],
         ),
       ),
     );
