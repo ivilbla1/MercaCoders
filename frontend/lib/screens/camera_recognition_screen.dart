@@ -4,6 +4,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import '../services/edge_impulse_service.dart';
+import 'package:image/image.dart' as img;
 
 const _verde = Color(0xFF2E7D32);
 
@@ -128,53 +129,63 @@ class _CameraRecognitionScreenState extends State<CameraRecognitionScreen> {
   Future<void> _captureAndAnalyze() async {
     if (!_isScanning || _isProcessing) return;
     if (_controller == null || !_controller!.value.isInitialized || _edgeService == null) return;
-
     _isProcessing = true;
     _attempts++;
-
     try {
       final picture = await _controller!.takePicture();
       final fileBytes = await File(picture.path).readAsBytes();
       File(picture.path).delete().ignore();
-
-      final results = await _edgeService!.classifyImage(fileBytes);
+      // --- AQUÍ EMPIEZA LA MAGIA DEL RECORTADO ---
+      img.Image? originalImage = img.decodeImage(fileBytes);
+      
+      if (originalImage == null) {
+        _onAttemptFailed('Error al decodificar imagen');
+        return;
+      }
+      // Calculamos el centro para hacer un recorte cuadrado
+      int size = originalImage.width < originalImage.height ? originalImage.width : originalImage.height;
+      int x = (originalImage.width - size) ~/ 2;
+      int y = (originalImage.height - size) ~/ 2;
+      
+      // Recortamos y redimensionamos a 160x160 (lo que espera Edge Impulse)
+      img.Image cropped = img.copyCrop(originalImage, x: x, y: y, width: size, height: size);
+      img.Image resized = img.copyResize(cropped, width: 160, height: 160);
+      
+      // Convertimos de nuevo a bytes
+      final processedBytes = img.encodeJpg(resized);
+      
+      // Llamamos al modelo con la imagen ya preparada
+      final results = await _edgeService!.classifyImage(processedBytes);
+      // --- FIN DE LA MAGIA ---
       if (!mounted || !_isScanning) return;
-
       if (results.isEmpty) {
         _onAttemptFailed('Sin resultados');
         return;
       }
-
       final topLabel = results.first['label'] as String;
       final topConfidence = results.first['confidence'] as double;
-
       setState(() {
         _currentLabel = topLabel;
         _currentConfidence = topConfidence;
       });
-
       if (topConfidence >= _confidenceThreshold) {
         _recentLabels.add(topLabel);
         if (_recentLabels.length > _consensusCount) {
           _recentLabels.removeAt(0);
         }
-
         final consensusReached = _recentLabels.length >= _consensusCount &&
             _recentLabels.every((label) => label == topLabel);
-
         if (consensusReached) {
           _stopScanning(finalStatus: '¡Producto identificado!');
           setState(() {
             _confirmedLabel = topLabel;
             _confirmedConfidence = topConfidence;
           });
-
           if (topLabel.toLowerCase() != 'unknown') {
             await _flutterTts.speak(topLabel);
           } else {
             await _flutterTts.speak("Producto desconocido, por favor reubica el objeto.");
           }
-
           _resetTimer = Timer(_resetDelay, () {
             if (mounted) _startScanning();
           });
@@ -183,7 +194,6 @@ class _CameraRecognitionScreenState extends State<CameraRecognitionScreen> {
       } else {
         _recentLabels.clear();
       }
-
       _onAttemptFailed(null);
     } catch (e) {
       _onAttemptFailed('Error: $e');
