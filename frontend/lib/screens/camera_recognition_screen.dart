@@ -9,11 +9,13 @@ import 'package:image/image.dart' as img;
 const _verde = Color(0xFF2E7D32);
 
 // Umbrales de la lógica de auto-captura
+
 const double _confidenceThreshold = 0.80;
 const int _consensusCount = 2;
 const int _maxAttempts = 15;
 const Duration _captureInterval = Duration(milliseconds: 700);
 const Duration _resetDelay = Duration(seconds: 4);
+
 
 class CameraRecognitionScreen extends StatefulWidget {
   const CameraRecognitionScreen({super.key});
