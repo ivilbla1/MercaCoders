@@ -30,8 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
     await _tts.speak(
       'Bienvenido a MercaVision. '
       'Tienes dos botones en la barra superior: Configuración a la izquierda y Perfil a la derecha. '
-      'Pulsa el botón grande de la cámara para reconocer productos con el modelo, '
-      'o el botón de micrófono para dictar tu lista de la compra.',
+      'Pulsa el botón grande de la cámara para reconocer productos con el modelo.',
     );
   }
 
@@ -117,91 +116,45 @@ class _HomeScreenState extends State<HomeScreen> {
 
               const SizedBox(height: 32),
 
-              // ── BOTONES CÁMARA Y MICRÓFONO ────────────────
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  // Botón cámara
-                  GestureDetector(
-                    onTap: () {
-                      _hablar('Abriendo reconocimiento por cámara.');
-                      Navigator.pushNamed(context, '/camera');
-                    },
-                    child: Column(
-                      children: [
-                        Container(
-                          width: microSize * 0.75,
-                          height: microSize * 0.75,
-                          decoration: BoxDecoration(
-                            color: _verde,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: _verde.withOpacity(0.35),
-                                blurRadius: 44,
-                                offset: const Offset(0, 10),
-                              ),
-                            ],
+              // ── BOTÓN CÁMARA CENTRADO ────────────────────────
+              GestureDetector(
+                onTap: () {
+                  _hablar('Abriendo reconocimiento por cámara.');
+                  Navigator.pushNamed(context, '/camera');
+                },
+                child: Column(
+                  children: [
+                    Container(
+                      width: microSize * 0.75,
+                      height: microSize * 0.75,
+                      decoration: BoxDecoration(
+                        color: _verde,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: _verde.withOpacity(0.35),
+                            blurRadius: 44,
+                            offset: const Offset(0, 10),
                           ),
-                          child: Icon(
-                            Icons.camera_alt,
-                            size: microSize * 0.75 * 0.5,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        const Text(
-                          'Escanear',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: _verde,
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
+                      child: Icon(
+                        Icons.camera_alt,
+                        size: microSize * 0.75 * 0.5,
+                        color: Colors.white,
+                      ),
                     ),
-                  ),
-                  // Botón micrófono (lista de la compra)
-                  GestureDetector(
-                    onTap: () {
-                      _hablar('Abriendo lista de la compra por voz.');
-                      Navigator.pushNamed(context, '/listening');
-                    },
-                    child: Column(
-                      children: [
-                        Container(
-                          width: microSize * 0.75,
-                          height: microSize * 0.75,
-                          decoration: BoxDecoration(
-                            color: _verde,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: _verde.withOpacity(0.35),
-                                blurRadius: 44,
-                                offset: const Offset(0, 10),
-                              ),
-                            ],
-                          ),
-                          child: Icon(
-                            Icons.mic,
-                            size: microSize * 0.75 * 0.5,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        const Text(
-                          'Lista por voz',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: _verde,
-                          ),
-                        ),
-                      ],
+                    const SizedBox(height: 10),
+                    const Text(
+                      'Escanear',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: _verde,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
 
               const Spacer(),
