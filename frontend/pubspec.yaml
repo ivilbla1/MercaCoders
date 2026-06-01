@@ -37,5 +37,5 @@ flutter:
   uses-material-design: true
   assets:
     - assets/
-    - assets/models/tflite_learn_978907_15.tflite
+    - assets/models/modelo.tflite
     - assets/models/labels.txt

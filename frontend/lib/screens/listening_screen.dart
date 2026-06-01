@@ -29,7 +29,7 @@ class _ListeningScreenState extends State<ListeningScreen>
     _animController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 900),
-    )..repeat(reverse: true);
+    );
     _animScale = Tween<double>(begin: 1.0, end: 1.15).animate(
       CurvedAnimation(parent: _animController, curve: Curves.easeInOut),
     );
@@ -54,6 +54,7 @@ class _ListeningScreenState extends State<ListeningScreen>
   Future<void> _iniciarEscucha() async {
     await _tts.speak('Escuchando. Di tu lista.');
     await _voiceService.inicializar();
+    _animController.repeat(reverse: true);
     setState(() {
       _escuchando = true;
       _textoDetectado = '';

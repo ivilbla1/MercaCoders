@@ -136,7 +136,9 @@ class _CameraRecognitionScreenState extends State<CameraRecognitionScreen> {
     try {
       final picture = await _controller!.takePicture();
       final fileBytes = await File(picture.path).readAsBytes();
-      File(picture.path).delete().ignore();
+      // Eliminamos el archivo temporal sin bloquear la ejecución.
+      // El then() evita advertencias de tipo en el callback de catchError.
+      File(picture.path).delete().then((_) {}, onError: (_) {});
       // --- AQUÍ EMPIEZA LA MAGIA DEL RECORTADO ---
       img.Image? originalImage = img.decodeImage(fileBytes);
       

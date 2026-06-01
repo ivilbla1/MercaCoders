@@ -82,7 +82,7 @@ class _ScanScreenState extends State<ScanScreen> {
     } else {
       _tts.speak('Lista completada. Dirígete a caja.');
       Future.delayed(const Duration(seconds: 3), () {
-        Navigator.pushNamed(context, '/cajas');
+        if (mounted) Navigator.of(context).popUntil((route) => route.isFirst);
       });
     }
   }
