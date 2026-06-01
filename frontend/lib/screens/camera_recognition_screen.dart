@@ -118,7 +118,7 @@ class _CameraRecognitionScreenState extends State<CameraRecognitionScreen> {
       if (finalStatus != null) _statusMessage = finalStatus;
     });
   }
-
+//
   void _scheduleNextCapture({bool immediate = false}) {
     if (!_isScanning) return;
     _captureTimer?.cancel();
