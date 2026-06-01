@@ -4,7 +4,7 @@ import 'package:image/image.dart' as img;
 import 'package:tflite_flutter/tflite_flutter.dart';
  
 class EdgeImpulseService {
-  static const String _modelAsset = 'assets/models/tflite_learn_978907_15.tflite';
+  static const String _modelAsset = 'assets/models/modelo.tflite';
   static const String _labelsAsset = 'assets/models/labels.txt';
  
   // Dimensiones esperadas por el modelo (160x160 RGB)
